@@ -1,6 +1,21 @@
+import re
 import xml.etree.cElementTree as ET
 
 autoint = True
+
+class xInt(int):
+    def dumps(self, indent=2, level=0):
+        pre = u' ' * indent * level
+        return pre + '<%s>%s</%s>\n'%(self.tag, self, self.tag)
+
+class xStr(unicode):
+    def dumps(self, indent=2, level=0):
+        pre = u' ' * indent * level
+        s, n = re.subn(r'(?m)^', pre, self)
+        if n > 1:
+            return u"%s<%s>\n%s\n%s</%s>\n"%(pre, self.tag, s, pre, self.tag)
+        else:
+            return u"%s<%s>%s</%s>\n"%(pre, self.tag, self, self.tag)
 
 class XMLStruct(object):
 
@@ -19,8 +34,8 @@ class XMLStruct(object):
     def __getattr__(self, attr):
         elem = self.elem.find(attr)
         result = as_struct(elem)
-        if result is None and attr == 'text':
-            return self.elem.text
+        if result is None and attr in ('text', 'tag'):
+            return getattr(self.elem, attr)
         return result
 
     def __getitem__(self, item):
@@ -71,6 +86,18 @@ class XMLStruct(object):
         self._by_key[key] = ans
         return ans
 
+    def dumps(self, indent=2, level=0):
+        if level == 0:
+            ans = u'<?xml version="1.0" encoding="UTF-8"?>\n'
+        else:
+            ans = u''
+        pre = ' ' * indent * level
+        ans += pre + '<%s>\n'%self.tag
+        for e in self:
+            ans += e.dumps(indent=indent, level=level+1)
+        ans += pre + '</%s>\n'%self.tag
+        return ans
+
 def is_complex(elem):
     if elem.keys():
         # has attributes
@@ -94,11 +121,16 @@ def as_struct(elem):
         return None
     if is_complex(elem):
         return XMLStruct(elem)
+    ans = None
     if autoint:
         if elem.text.lower().startswith('0x'):
-            return int(elem.text[2:], 16)
-        try:
-            return int(elem.text)
-        except ValueError:
-            pass
-    return elem.text
+            ans = xInt(elem.text[2:], 16)
+        else:
+            try:
+                ans = xInt(elem.text)
+            except ValueError:
+                pass
+    if ans is None:
+        ans = xStr(elem.text)
+    ans.tag = elem.tag
+    return ans

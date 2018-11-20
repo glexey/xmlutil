@@ -117,3 +117,16 @@ def test_dict_by_tag():
     assert len(name2plant) == 36
     assert name2plant["Dutchman's-Breeches"].BOTANICAL == 'Dicentra cucullaria'
 
+def test_dumps():
+    top = XMLStruct(_mydir + '/plant_catalog.xml')
+    assert top.PLANT.dumps() == """<?xml version="1.0" encoding="UTF-8"?>
+<PLANT>
+  <COMMON>Bloodroot</COMMON>
+  <BOTANICAL>Sanguinaria canadensis</BOTANICAL>
+  <ZONE>4</ZONE>
+  <LIGHT>Mostly Shady</LIGHT>
+  <PRICE>$2.44</PRICE>
+  <AVAILABILITY>31599</AVAILABILITY>
+</PLANT>
+"""
+    assert top.dumps()
