@@ -16,6 +16,9 @@ class XMLStruct(object):
         return result
 
     def __getitem__(self, item):
+        if isinstance(item, int):
+            # List-like access
+            return XMLStruct(self.elem[item])
         result = self.elem.attrib[item]
         return result
 
@@ -33,7 +36,8 @@ class XMLStruct(object):
         return True
 
     def __repr__(self):
-        return "XMLStruct('%s')"%self.elem.tag
+        s_attr = ''.join(", %s='%s'"%(k, v) for k,v in self.elem.attrib.iteritems())
+        return "XMLStruct('%s'%s)"%(self.elem.tag, s_attr)
 
     def __str__(self):
         if self.is_complex():
