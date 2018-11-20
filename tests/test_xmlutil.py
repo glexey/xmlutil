@@ -16,12 +16,11 @@ def test_parse():
 
 def test_str():
     top = XMLStruct(xml1)
-    assert str(top.child) == "hello"
+    assert str(top.child) == "XMLStruct('child', name='child1')"
 
 def test_text():
     top = XMLStruct(xml1)
-    assert top.child == "hello"
-    assert top.child != "hullo"
+    assert top.child.text == "hello"
 
 xml2 = '''
 <top>
@@ -29,7 +28,7 @@ xml2 = '''
  <message name="msg1">
   <field name="field1">
    <start>0</start>
-   <size>8</size>
+   <size>0x8</size>
    <description>Field #1</description>
   </field>
   <field name="field2">
@@ -84,3 +83,17 @@ def test_find():
     top = XMLStruct(xml2)
     msg2 = top.messages("message", name="msg2")
     assert msg2['name'] == 'msg2'
+
+def test_first_item():
+    top = XMLStruct(xml2)
+    assert top.messages.message['name'] == 'msg1'
+
+def test_autoint():
+    top = XMLStruct(xml2)
+    f = top.messages.message.field
+    assert f.start == 0
+    assert f.size == 8
+    msg2 = top.messages("message", name="msg2")
+    # try sorting by start bit
+    s = [f.description for f in sorted(msg2, key=lambda f: f.start)]
+    assert s == ['Feld #1', 'Feld #3', 'Feld #2']

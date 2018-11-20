@@ -1,5 +1,7 @@
 import xml.etree.cElementTree as ET
 
+autoint = True
+
 class XMLStruct(object):
 
     def __init__(self, arg):
@@ -10,52 +12,32 @@ class XMLStruct(object):
     
     def __getattr__(self, attr):
         elem = self.elem.find(attr)
-        if elem is None:
-            raise AttributeError("Attribute '%s' not found"%attr)
-        result = XMLStruct(elem)
+        result = as_struct(elem)
+        if result is None and attr == 'text':
+            return self.elem.text
         return result
 
     def __getitem__(self, item):
         if isinstance(item, int):
             # List-like access
-            return XMLStruct(self.elem[item])
-        result = self.elem.attrib[item]
+            return as_struct(self.elem[item])
+        result = self.elem.get(item)
         return result
 
     def get(self, item, default=None):
         result = self.elem.attrib.get(item, default)
         return result
 
-    def is_complex(self):
-        it = self.elem.iter()
-        it.next() # self
-        try:
-            it.next()
-        except StopIteration:
-            return False
-        return True
 
     def __repr__(self):
         s_attr = ''.join(", %s='%s'"%(k, v) for k,v in self.elem.items())
         return "XMLStruct('%s'%s)"%(self.elem.tag, s_attr)
 
     def __str__(self):
-        if self.is_complex():
+        if is_complex(self.elem):
             return self.__repr__()
         else:
             return self.elem.text
-
-    def __eq__(self, other):
-        if isinstance(other, basestring):
-            return str(self) == other
-        else:
-            return self.elem == other.elem
-
-    def __neq__(self, other):
-        if isinstance(other, basestring):
-            return str(self) != other
-        else:
-            return self.elem != other.elem
 
     def __call__(self, match, **kwargs):
         """
@@ -64,6 +46,37 @@ class XMLStruct(object):
         for e in self.elem.iterfind(match):
             mismatch = any([e.get(k) != v for k, v in kwargs.iteritems()])
             if not mismatch:
-                return XMLStruct(e)
+                return as_struct(e)
         return None
 
+def is_complex(elem):
+    if elem.keys():
+        # has attributes
+        return True
+    # check if has children
+    it = elem.iter()
+    it.next() # self
+    try:
+        it.next()
+    except StopIteration:
+        return False
+    return True
+
+def as_struct(elem):
+    """
+    Returns a simple int / string for simple elements,
+    and XMLStruct() representation for complex ones.
+    Need better name for this method?
+    """
+    if elem is None:
+        return None
+    if is_complex(elem):
+        return XMLStruct(elem)
+    if autoint:
+        if elem.text.lower().startswith('0x'):
+            return int(elem.text[2:], 16)
+        try:
+            return int(elem.text)
+        except ValueError:
+            pass
+    return elem.text
