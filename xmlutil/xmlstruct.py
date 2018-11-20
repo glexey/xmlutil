@@ -14,6 +14,7 @@ class XMLStruct(object):
                 self.elem = ET.parse(arg).getroot()
         else:
             self.elem = arg
+        self._by_key = {}
     
     def __getattr__(self, attr):
         elem = self.elem.find(attr)
@@ -55,6 +56,20 @@ class XMLStruct(object):
             if not mismatch:
                 return as_struct(e)
         return None
+
+    def as_dict(self, key):
+        if key in self._by_key:
+            return self._by_key[key]
+        ans = {}
+        for e in self:
+            if key in e.elem.attrib:
+                ans[e[key]] = e
+            elif hasattr(e, key):
+                ans[getattr(e, key)] = e
+            else:
+                raise KeyError("Attribute or tag '%s' not found in %s"%(key, e))
+        self._by_key[key] = ans
+        return ans
 
 def is_complex(elem):
     if elem.keys():

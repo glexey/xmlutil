@@ -103,3 +103,17 @@ def test_autoint():
 def test_file():
     top = XMLStruct(_mydir + '/plant_catalog.xml')
     assert len(top) == 36
+
+def test_dict_by_attr():
+    top = XMLStruct(xml2)
+    msg = top.messages.message
+    name2field = msg.as_dict('name')
+    assert len(name2field) == 3
+    assert name2field['field3'].description == 'Field #3'
+
+def test_dict_by_tag():
+    top = XMLStruct(_mydir + '/plant_catalog.xml')
+    name2plant = top.as_dict('COMMON')
+    assert len(name2plant) == 36
+    assert name2plant["Dutchman's-Breeches"].BOTANICAL == 'Dicentra cucullaria'
+
