@@ -32,6 +32,9 @@ class XMLStruct(object):
             return False
         return True
 
+    def __repr__(self):
+        return "XMLStruct('%s')"%self.elem.tag
+
     def __str__(self):
         if self.is_complex():
             return "XMLStruct('%s')"%self.elem.tag
