@@ -6,7 +6,12 @@ class XMLStruct(object):
 
     def __init__(self, arg):
         if isinstance(arg, basestring):
-            self.elem = ET.fromstring(arg)
+            if '<' in arg:
+                # XML text
+                self.elem = ET.fromstring(arg)
+            else:
+                # XML file name
+                self.elem = ET.parse(arg).getroot()
         else:
             self.elem = arg
     
@@ -28,6 +33,8 @@ class XMLStruct(object):
         result = self.elem.attrib.get(item, default)
         return result
 
+    def __len__(self):
+        return len(self.elem)
 
     def __repr__(self):
         s_attr = ''.join(", %s='%s'"%(k, v) for k,v in self.elem.items())

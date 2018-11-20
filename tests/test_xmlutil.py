@@ -97,3 +97,9 @@ def test_autoint():
     # try sorting by start bit
     s = [f.description for f in sorted(msg2, key=lambda f: f.start)]
     assert s == ['Feld #1', 'Feld #3', 'Feld #2']
+
+###
+
+def test_file():
+    top = XMLStruct(_mydir + '/plant_catalog.xml')
+    assert len(top) == 36
