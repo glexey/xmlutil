@@ -51,7 +51,7 @@ xml2 = '''
   </field>
   <field name="feld2">
    <start>16</start>
-   <size>8</size>
+   <size>16</size>
    <description>Feld #2</description>
   </field>
   <field name="feld3">
@@ -79,3 +79,8 @@ def test_iter():
     assert msg_names == ['msg1', 'msg2']
     descriptions = [f.description for f in top.messages[1]]
     assert descriptions == ['Feld #1', 'Feld #2', 'Feld #3']
+
+def test_find():
+    top = XMLStruct(xml2)
+    msg2 = top.messages("message", name="msg2")
+    assert msg2['name'] == 'msg2'

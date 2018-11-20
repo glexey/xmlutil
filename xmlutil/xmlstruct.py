@@ -36,12 +36,12 @@ class XMLStruct(object):
         return True
 
     def __repr__(self):
-        s_attr = ''.join(", %s='%s'"%(k, v) for k,v in self.elem.attrib.iteritems())
+        s_attr = ''.join(", %s='%s'"%(k, v) for k,v in self.elem.items())
         return "XMLStruct('%s'%s)"%(self.elem.tag, s_attr)
 
     def __str__(self):
         if self.is_complex():
-            return "XMLStruct('%s')"%self.elem.tag
+            return self.__repr__()
         else:
             return self.elem.text
 
@@ -56,3 +56,14 @@ class XMLStruct(object):
             return str(self) != other
         else:
             return self.elem != other.elem
+
+    def __call__(self, match, **kwargs):
+        """
+        Find first element by tag name or path, filtering by given attributes
+        """
+        for e in self.elem.iterfind(match):
+            mismatch = any([e.get(k) != v for k, v in kwargs.iteritems()])
+            if not mismatch:
+                return XMLStruct(e)
+        return None
+
