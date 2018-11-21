@@ -72,6 +72,30 @@ class XMLStruct(object):
                 return as_struct(e)
         return None
 
+    def __eq__(self, other):
+        diff = self.is_different(other)
+        return not diff
+
+    def __ne__(self, other):
+        diff = self.is_different(other)
+        return diff
+
+    def is_different(self, other, recheck=None):
+        if self.elem.tag != other.elem.tag or \
+           self.elem.attrib != other.elem.attrib or \
+           self.elem.text != other.elem.text or \
+           len(self) != len(other):
+            if not recheck or recheck(self, other):
+                return True
+        a1 = list(self)
+        a2 = list(other)
+        for i, e1 in enumerate(a1):
+            e2 = a2[i]
+            if e1 == e2: continue
+            if not hasattr(e1, 'is_different') or e1.is_different(e2):
+                return True
+        return False
+
     def as_dict(self, key):
         if key in self._by_key:
             return self._by_key[key]
