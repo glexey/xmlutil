@@ -130,6 +130,13 @@ def test_dumps():
 </PLANT>
 """
     assert top.dumps()
+    xml1 = XMLStruct('<top><child name="child1">hello</child></top>')
+    assert xml1.dumps() == """<?xml version="1.0" encoding="UTF-8"?>
+<top>
+  <child name="child1">
+  </child>
+</top>
+"""
 
 def test_equality():
     top1 = XMLStruct(_mydir + '/plant_catalog.xml')
@@ -148,3 +155,13 @@ def test_equality():
     assert xml4 != xml2 and xml2 != xml4
     assert xml5 != xml2 and xml2 != xml5
     assert xml6 != xml2 and xml2 != xml6
+
+def test_set_attr():
+    xml1 = XMLStruct('<top><child name="child1">hello</child></top>')
+    xml2 = XMLStruct('<top><child name="child2">hello</child></top>')
+    assert xml1 != xml2
+    xml2.child["name"] = "child1"
+    assert xml1 == xml2
+    xml2.child["foo"] = "bar"
+    assert '<child foo="bar" name="child1">' in xml2.dumps()
+

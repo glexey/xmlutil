@@ -45,6 +45,9 @@ class XMLStruct(object):
         result = self.elem.get(item)
         return result
 
+    def __setitem__(self, item, value):
+        self.elem.attrib[item] = value
+
     def get(self, item, default=None):
         result = self.elem.attrib.get(item, default)
         return result
@@ -116,7 +119,8 @@ class XMLStruct(object):
         else:
             ans = u''
         pre = ' ' * indent * level
-        ans += pre + '<%s>\n'%self.tag
+        attr = ''.join([' %s="%s"'%(k, v) for k,v in sorted(self.elem.items())])
+        ans += pre + '<%s%s>\n'%(self.tag, attr)
         for e in self:
             ans += e.dumps(indent=indent, level=level+1)
         ans += pre + '</%s>\n'%self.tag
