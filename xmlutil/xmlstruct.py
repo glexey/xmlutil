@@ -19,14 +19,18 @@ class xStr(unicode):
 
 class XMLStruct(object):
 
-    def __init__(self, arg):
+    def __init__(self, arg, **kwargs):
         if isinstance(arg, basestring):
             if '<' in arg:
                 # XML text
                 self.elem = ET.fromstring(arg)
-            else:
+            elif arg.lower().endswith('.xml'):
                 # XML file name
                 self.elem = ET.parse(arg).getroot()
+            else:
+                # Top element
+                attr = ''.join([' %s="%s"'%(k, v) for k,v in sorted(kwargs.iteritems())])
+                self.elem = ET.fromstring("<%s%s></%s>"%(arg, attr, arg))
         else:
             self.elem = arg
         self._by_key = {}
@@ -84,6 +88,14 @@ class XMLStruct(object):
         return diff
 
     def is_different(self, other, recheck=None):
+        if isinstance(other, basestring):
+            if other is None: other = ""
+            text = self.text
+            if text is None: text = ""
+            if text != other:
+                if not recheck or recheck(self, other):
+                    return True
+            return False
         if self.elem.tag != other.elem.tag or \
            self.elem.attrib != other.elem.attrib or \
            self.elem.text != other.elem.text or \
@@ -150,7 +162,7 @@ def as_struct(elem):
     if is_complex(elem):
         return XMLStruct(elem)
     ans = None
-    if autoint:
+    if autoint and elem.text:
         if elem.text.lower().startswith('0x'):
             ans = xInt(elem.text[2:], 16)
         else:
@@ -159,6 +171,6 @@ def as_struct(elem):
             except ValueError:
                 pass
     if ans is None:
-        ans = xStr(elem.text)
+        ans = xStr(elem.text if elem.text else "")
     ans.tag = elem.tag
     return ans

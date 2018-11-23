@@ -22,6 +22,13 @@ def test_text():
     top = XMLStruct(xml1)
     assert top.child.text == "hello"
 
+xml1e = '<top><num></num><child name="child1"></child></top>'
+
+def test_empty_tag():
+    top = XMLStruct(xml1e)
+    assert top.num == ""
+    assert top.child == ""
+
 xml2 = '''
 <top>
 <messages>
@@ -164,4 +171,3 @@ def test_set_attr():
     assert xml1 == xml2
     xml2.child["foo"] = "bar"
     assert '<child foo="bar" name="child1">' in xml2.dumps()
-
