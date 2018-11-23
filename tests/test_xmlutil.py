@@ -171,3 +171,24 @@ def test_set_attr():
     assert xml1 == xml2
     xml2.child["foo"] = "bar"
     assert '<child foo="bar" name="child1">' in xml2.dumps()
+
+def test_set_content():
+    xml1 = XMLStruct('<top><child>hello</child><num>10</num></top>')
+    xml2 = XMLStruct('<top><child>there</child><num>12</num></top>')
+    assert xml1 != xml2
+    xml2.child = "hello"
+    xml2.num = 10
+    assert xml1 == xml2
+    assert '<child>hello</child>' in xml2.dumps()
+    assert '<num>10</num>' in xml2.dumps()
+
+#def test_create():
+#    xml = XMLStruct('top', foo="bar")
+#    xml.append('elems', num=5)
+#    assert xml('elems', num=5)
+#    xml.elems.append("elem", "Element 1", name="elem1")
+#    xml.elems.append("elem", "Element 2", name="elem2")
+#    xml.elems.append("elem", "Element 3", name="elem3")
+#    print xml.dumps()
+#    assert 0
+#

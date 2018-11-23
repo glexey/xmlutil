@@ -3,20 +3,6 @@ import xml.etree.cElementTree as ET
 
 autoint = True
 
-class xInt(int):
-    def dumps(self, indent=2, level=0):
-        pre = u' ' * indent * level
-        return pre + '<%s>%s</%s>\n'%(self.tag, self, self.tag)
-
-class xStr(unicode):
-    def dumps(self, indent=2, level=0):
-        pre = u' ' * indent * level
-        s, n = re.subn(r'(?m)^', pre, self)
-        if n > 1:
-            return u"%s<%s>\n%s\n%s</%s>\n"%(pre, self.tag, s, pre, self.tag)
-        else:
-            return u"%s<%s>%s</%s>\n"%(pre, self.tag, self, self.tag)
-
 class XMLStruct(object):
 
     def __init__(self, arg, **kwargs):
@@ -41,6 +27,16 @@ class XMLStruct(object):
         if result is None and attr in ('text', 'tag'):
             return getattr(self.elem, attr)
         return result
+
+    def __setattr__(self, attr, value):
+        if isinstance(value, basestring) or isinstance(value, int):
+            child = getattr(self, attr)
+            # If there exists a child with a name of a given attribute,
+            # set its text to a given value
+            if child:
+                child.elem.text = unicode(value)
+                return
+        self.__dict__[attr] = value
 
     def __getitem__(self, item):
         if isinstance(item, int):
@@ -86,6 +82,20 @@ class XMLStruct(object):
     def __ne__(self, other):
         diff = self.is_different(other)
         return diff
+
+    #def append(self, _tag, *args, **kwargs):
+    #    # args[0] - element text (optional)
+    #    # kwargs - element attributes
+    #    attr = ''.join([' %s="%s"'%(k, v) for k,v in sorted(kwargs.iteritems())])
+    #    if len(args) > 0:
+    #        text = args[0]
+    #    else:
+    #        text = ''
+    #    s = '<%s%s>%s</%s>'%(_tag, attr, text, _tag)
+    #    e = ET.fromstring(s)
+    #    print "CREATE", s, e.text
+    #    self.elem.append(e)
+    #    print "XXX", self(_tag, **kwargs)
 
     def is_different(self, other, recheck=None):
         if isinstance(other, basestring):
@@ -157,6 +167,20 @@ def as_struct(elem):
     and XMLStruct() representation for complex ones.
     Need better name for this method?
     """
+    class xInt(int):
+        def dumps(self, indent=2, level=0):
+            pre = u' ' * indent * level
+            return pre + '<%s>%s</%s>\n'%(self.tag, self, self.tag)
+
+    class xStr(unicode):
+        def dumps(self, indent=2, level=0):
+            pre = u' ' * indent * level
+            s, n = re.subn(r'(?m)^', pre, self)
+            if n > 1:
+                return u"%s<%s>\n%s\n%s</%s>\n"%(pre, self.tag, s, pre, self.tag)
+            else:
+                return u"%s<%s>%s</%s>\n"%(pre, self.tag, self, self.tag)
+
     if elem is None:
         return None
     if is_complex(elem):
@@ -173,4 +197,5 @@ def as_struct(elem):
     if ans is None:
         ans = xStr(elem.text if elem.text else "")
     ans.tag = elem.tag
+    ans.elem = elem
     return ans
