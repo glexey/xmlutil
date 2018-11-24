@@ -1,7 +1,11 @@
 import re
 import xml.etree.cElementTree as ET
 
+# Automatically convert string to integers, when possible
 autoint = True
+
+# Allow access to tag attributes with '.xxx' (in addition to '["xxx"]')
+get_attr_as_member = True
 
 class XMLStruct(object):
 
@@ -26,6 +30,8 @@ class XMLStruct(object):
         result = as_struct(elem)
         if result is None and attr in ('text', 'tag'):
             return getattr(self.elem, attr)
+        if get_attr_as_member and attr in self.elem.attrib:
+            return self.elem.attrib[attr]
         return result
 
     def __setattr__(self, attr, value):

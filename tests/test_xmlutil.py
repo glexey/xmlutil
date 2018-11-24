@@ -13,6 +13,8 @@ def test_parse():
     assert top.child.get("name") == "child1"
     assert top.child.get("name", "blah") == "child1"
     assert top.child.get("nome", "blah") == "blah"
+    # Access attributes as "members"
+    assert top.child.name == "child1"
 
 def test_str():
     top = XMLStruct(xml1)
