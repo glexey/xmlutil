@@ -167,7 +167,7 @@ def is_complex(elem):
         return False
     return True
 
-class xInt(int):
+class xInt(long):
     def dumps(self, indent=2, level=0):
         pre = u' ' * indent * level
         return pre + '<%s>%s</%s>\n'%(self.tag, self, self.tag)

@@ -189,6 +189,10 @@ def test_set_content():
     assert '<child>hello</child>' in xml2.dumps()
     assert '<num>10</num>' in xml2.dumps()
 
+def test_longint():
+    xml1 = XMLStruct('<top><child>hello</child><num>0xFFFFFFFF</num></top>')
+    assert xml1.num == 0xFFFFFFFF
+
 #def test_create():
 #    xml = XMLStruct('top', foo="bar")
 #    xml.append('elems', num=5)
