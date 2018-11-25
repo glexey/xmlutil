@@ -5,7 +5,7 @@ sys.path.append(_mydir + '/..')
 
 from xmlutil import XMLStruct
 
-xml1 = '<top><child name="child1">hello</child></top>'
+xml1 = '<top><child name="child1" id="0xe2">hello</child></top>'
 
 def test_parse():
     top = XMLStruct(xml1)
@@ -18,11 +18,16 @@ def test_parse():
 
 def test_str():
     top = XMLStruct(xml1)
-    assert str(top.child) == "XMLStruct('child', name='child1')"
+    assert str(top.child) == "XMLStruct('child', name='child1', id='0xe2')"
 
 def test_text():
     top = XMLStruct(xml1)
     assert top.child.text == "hello"
+
+def test_attr_as_int():
+    top = XMLStruct(xml1)
+    assert top.child["id"] == 0xe2
+    assert top.child.id == 0xe2
 
 xml1e = '<top><num></num><child name="child1"></child></top>'
 

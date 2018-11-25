@@ -31,7 +31,7 @@ class XMLStruct(object):
         if result is None and attr in ('text', 'tag'):
             return getattr(self.elem, attr)
         if get_attr_as_member and attr in self.elem.attrib:
-            return self.elem.attrib[attr]
+            return self[attr]
         return result
 
     def __setattr__(self, attr, value):
@@ -48,8 +48,8 @@ class XMLStruct(object):
         if isinstance(item, int):
             # List-like access
             return as_struct(self.elem[item])
-        result = self.elem.get(item)
-        return result
+        s = self.elem.get(item)
+        return try_str2int(s)
 
     def __setitem__(self, item, value):
         self.elem.attrib[item] = value
@@ -167,40 +167,43 @@ def is_complex(elem):
         return False
     return True
 
+class xInt(int):
+    def dumps(self, indent=2, level=0):
+        pre = u' ' * indent * level
+        return pre + '<%s>%s</%s>\n'%(self.tag, self, self.tag)
+
+class xStr(unicode):
+    def dumps(self, indent=2, level=0):
+        pre = u' ' * indent * level
+        s, n = re.subn(r'(?m)^', pre, self)
+        if n > 1:
+            return u"%s<%s>\n%s\n%s</%s>\n"%(pre, self.tag, s, pre, self.tag)
+        else:
+            return u"%s<%s>%s</%s>\n"%(pre, self.tag, self, self.tag)
+
+def try_str2int(s):
+    if not autoint or s is None: return s
+    try:
+        if s.lower().startswith('0x'):
+            return xInt(s[2:], 16)
+        else:
+            return xInt(s)
+    except ValueError:
+        pass
+    return s
+
 def as_struct(elem):
     """
     Returns a simple int / string for simple elements,
     and XMLStruct() representation for complex ones.
     Need better name for this method?
     """
-    class xInt(int):
-        def dumps(self, indent=2, level=0):
-            pre = u' ' * indent * level
-            return pre + '<%s>%s</%s>\n'%(self.tag, self, self.tag)
-
-    class xStr(unicode):
-        def dumps(self, indent=2, level=0):
-            pre = u' ' * indent * level
-            s, n = re.subn(r'(?m)^', pre, self)
-            if n > 1:
-                return u"%s<%s>\n%s\n%s</%s>\n"%(pre, self.tag, s, pre, self.tag)
-            else:
-                return u"%s<%s>%s</%s>\n"%(pre, self.tag, self, self.tag)
-
     if elem is None:
         return None
     if is_complex(elem):
         return XMLStruct(elem)
-    ans = None
-    if autoint and elem.text:
-        if elem.text.lower().startswith('0x'):
-            ans = xInt(elem.text[2:], 16)
-        else:
-            try:
-                ans = xInt(elem.text)
-            except ValueError:
-                pass
-    if ans is None:
+    ans = try_str2int(elem.text)
+    if isinstance(ans, basestring) or ans is None:
         ans = xStr(elem.text if elem.text else "")
     ans.tag = elem.tag
     ans.elem = elem
