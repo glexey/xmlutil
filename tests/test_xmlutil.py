@@ -302,6 +302,7 @@ def test_str_ops():
 
     assert "qd" in d
 
+    assert d in ["assdf", "dqd"]
 
 def test_hash():
     top = XMLStruct('<top><child>hello</child></top>')

@@ -150,6 +150,12 @@ class XMLStruct(object):
         else:
             return hash(self._value())
 
+    def __contains__(self, value):
+        if self._has_children_:
+            return value in self.elem # bogus
+        else:
+            return value in self._value()
+
     def startswith(self, s):
         if self._has_children_: return False
         if self.elem.text is None: return False
