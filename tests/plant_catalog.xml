@@ -3,6 +3,10 @@
 	<PLANT>
 		<COMMON>Bloodroot</COMMON>
 		<BOTANICAL>Sanguinaria canadensis</BOTANICAL>
+                <description>
+                    Foo
+                    Bar
+                </description>
 		<ZONE>4</ZONE>
 		<LIGHT>Mostly Shady</LIGHT>
 		<PRICE>$2.44</PRICE>

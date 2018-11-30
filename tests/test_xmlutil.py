@@ -17,8 +17,14 @@ def test_parse():
     assert top.child.name == "child1"
 
 def test_str():
+    """
+    For elements with no children, str() should return element text.
+    For element with children, str() is same as repr()
+    """
     top = XMLStruct(xml1)
-    assert str(top.child) == "XMLStruct('child', name='child1', id='0xe2')"
+    assert str(top) == repr(top)
+    assert str(top) == "XMLStruct('top')"
+    assert str(top.child) == "hello"
 
 def test_text():
     top = XMLStruct(xml1)
@@ -131,24 +137,29 @@ def test_dict_by_tag():
     assert len(name2plant) == 36
     assert name2plant["Dutchman's-Breeches"].BOTANICAL == 'Dicentra cucullaria'
 
-def test_dumps():
+def test_dumps1():
     top = XMLStruct(_mydir + '/plant_catalog.xml')
     assert top.PLANT.dumps() == """<?xml version="1.0" encoding="UTF-8"?>
 <PLANT>
   <COMMON>Bloodroot</COMMON>
   <BOTANICAL>Sanguinaria canadensis</BOTANICAL>
+  <description>
+                    Foo
+                    Bar
+  </description>
   <ZONE>4</ZONE>
   <LIGHT>Mostly Shady</LIGHT>
   <PRICE>$2.44</PRICE>
-  <AVAILABILITY>31599</AVAILABILITY>
+  <AVAILABILITY>031599</AVAILABILITY>
 </PLANT>
 """
     assert top.dumps()
+
+def test_dumps2():
     xml1 = XMLStruct('<top><child name="child1">hello</child></top>')
     assert xml1.dumps() == """<?xml version="1.0" encoding="UTF-8"?>
 <top>
-  <child name="child1">
-  </child>
+  <child name="child1">hello</child>
 </top>
 """
 
@@ -201,6 +212,64 @@ def test_set_other_member():
     assert xml1.child.dataclass == "123"
     xml1.child.another.dataclass = "xxx"
     assert xml1.child.another.dataclass == "xxx"
+    for a in xml1:
+        assert a.dataclass == "123" # non-XML members don't get converted
+
+def test_same_obj():
+    top = XMLStruct('<top><a><a1>a1text</a1></a><a><a1>a1text2</a1></a><b><b1>b1text</b1></b><b><b1>b1text2</b1></b></top>')
+    aa = list(top)
+    assert id(aa[0]) == id(top.a)
+    assert id(aa[0]) == id(top("a"))
+    assert id(aa[2]) == id(top.b)
+    assert id(aa[2]) == id(top("b"))
+    bb = list(top.a)
+    assert id(bb[0]) == id(top.a.a1)
+
+def test_numerics():
+    top = XMLStruct('<top><a>10</a><b>5</b></top>')
+    a = top.a
+    b = top.b
+    assert a > b
+    assert a >= b
+    assert b < a
+    assert b <= a
+    assert a + b == 15
+    assert a + 2 == 12
+    assert 2 + a == 12
+    assert a - b == 5
+    assert a - 1 == 9
+    assert 1 - a == -9
+    assert a * b == 50
+    assert a * 3 == 30
+    assert 3 * a == 30
+    assert a / b == 2
+    assert a / 4 == 2,    a / 4
+    assert 4 / a == 0,    4 / a
+    assert a / 4. == 2.5, a / 4.
+    assert 4. / a == 0.4, 4. / a
+    assert a // b == 2
+    assert a // 3 == 3
+    assert 23 // a == 2
+    assert a ** b == 100000
+    assert a ** 3 == 1000, a ** 3
+    assert 2 ** a == 1024
+    assert abs(a) == 10
+    assert -a == -10
+    assert a % b == 0
+    assert a % 3 == 1
+    assert 23 % a == 3
+    assert a >> b == 0
+    assert a >> 1 == 5
+    assert 33333 >> a == 32
+    assert a << b == 320
+    assert a << 1 == 20
+    assert 1 << a == 1024
+
+    assert float(a) / 3 == 10. / 3
+    assert int(a) == 10
+    assert long(a) == 10
+    assert oct(a) == '012'
+    assert hex(a) == '0xa'
 
 #def test_create():
 #    xml = XMLStruct('top', foo="bar")

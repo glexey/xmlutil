@@ -1,4 +1,5 @@
 import re
+from numbers import Number
 import xml.etree.cElementTree as ET
 
 # Automatically convert string to integers, when possible
@@ -23,26 +24,36 @@ class XMLStruct(object):
                 self.elem = ET.fromstring("<%s%s></%s>"%(arg, attr, arg))
         else:
             self.elem = arg
-        self._by_key = {}
+        self._by_key_ = {}
+        self._objcache_ = {}
+        self._has_children_ = len(self.elem) > 0
     
+    def _elem2struct(self, elem):
+        if id(elem) in self._objcache_:
+            return self._objcache_[id(elem)]
+        result = XMLStruct(elem)
+        self._objcache_[id(elem)] = result
+        return result
+
     def __getattr__(self, attr):
-        if attr in self.__dict__:
-            return self.__dict__[attr]
         elem = self.elem.find(attr)
-        result = as_struct(elem)
-        if result is None and attr in ('text', 'tag'):
+        if elem is not None:
+            result = self._elem2struct(elem)
+        elif  attr in ('text', 'tag'):
             result = getattr(self.elem, attr)
         elif get_attr_as_member and attr in self.elem.attrib:
             result = self[attr]
-        self.__dict__[attr] = result # must cache, so that user can refer to same object later
+        else:
+            result = None
         return result
 
     def __setattr__(self, attr, value):
         if isinstance(value, basestring) or isinstance(value, int):
-            child = getattr(self, attr)
-            # If there exists a child with a name of a given attribute,
-            # set its text to a given value
-            if child:
+            elem  = self.elem.find(attr)
+            if elem is not None:
+                # If there exists child element with a name of a given attribute,
+                # set it to a given value
+                child = self._elem2struct(elem)
                 child.elem.text = unicode(value)
                 return
         self.__dict__[attr] = value
@@ -50,7 +61,10 @@ class XMLStruct(object):
     def __getitem__(self, item):
         if isinstance(item, int):
             # List-like access
-            return as_struct(self.elem[item])
+            elem = self.elem[item]
+            result = self._elem2struct(elem)
+            return result
+        # Get XML attribute ("blah" from <tag item="blah">)
         s = self.elem.get(item)
         return try_str2int(s)
 
@@ -69,8 +83,10 @@ class XMLStruct(object):
         return "XMLStruct('%s'%s)"%(self.elem.tag, s_attr)
 
     def __str__(self):
-        if is_complex(self.elem):
+        if self._has_children_:
             return self.__repr__()
+        elif self.elem.text is None:
+            return ''
         else:
             return self.elem.text
 
@@ -81,7 +97,7 @@ class XMLStruct(object):
         for e in self.elem.iterfind(match):
             mismatch = any([e.get(k) != v for k, v in kwargs.iteritems()])
             if not mismatch:
-                return as_struct(e)
+                return self._elem2struct(e)
         return None
 
     def __eq__(self, other):
@@ -92,6 +108,36 @@ class XMLStruct(object):
         diff = self.is_different(other)
         return diff
 
+    def __cmp__(self, other): return -other.__cmp__(self._value())
+    def __add__(self, other): return other.__radd__(self._value())
+    def __radd__(self, other): return other.__add__(self._value())
+    def __sub__(self, other): return other.__rsub__(self._value())
+    def __rsub__(self, other): return other.__sub__(self._value())
+    def __mul__(self, other): return other.__rmul__(self._value())
+    def __rmul__(self, other): return other.__mul__(self._value())
+    def __div__(self, other): return other.__rdiv__(self._value())
+    def __rdiv__(self, other): return other.__div__(self._value())
+    def __floordiv__(self, other): return other.__rfloordiv__(self._value())
+    def __rfloordiv__(self, other): return other.__floordiv__(self._value())
+    def __mod__(self, other): return other.__rmod__(self._value())
+    def __rmod__(self, other): return other.__mod__(self._value())
+    def __divmod__(self, other): return other.__rdivmod__(self._value())
+    def __rdivmod__(self, other): return other.__divmod__(self._value())
+    def __lshift__(self, other): return other.__rlshift__(self._value())
+    def __rlshift__(self, other): return other.__lshift__(self._value())
+    def __rshift__(self, other): return other.__rrshift__(self._value())
+    def __rrshift__(self, other): return other.__rshift__(self._value())
+    def __pow__(self, other): return other.__rpow__(self._value())
+    def __rpow__(self, other): return other.__pow__(self._value())
+    def __abs__(self): return abs(self._value())
+    def __neg__(self): return -(self._value())
+
+    def __float__(self): return float(self._value())
+    def __int__(self): return int(self._value())
+    def __long__(self): return long(self._value())
+    def __hex__(self): return hex(self._value())
+    def __oct__(self): return oct(self._value())
+        
     #def append(self, _tag, *args, **kwargs):
     #    # args[0] - element text (optional)
     #    # kwargs - element attributes
@@ -102,22 +148,18 @@ class XMLStruct(object):
     #        text = ''
     #    s = '<%s%s>%s</%s>'%(_tag, attr, text, _tag)
     #    e = ET.fromstring(s)
-    #    print "CREATE", s, e.text
     #    self.elem.append(e)
-    #    print "XXX", self(_tag, **kwargs)
 
     def is_different(self, other, recheck=None):
-        if isinstance(other, basestring):
-            if other is None: other = ""
-            text = self.text
-            if text is None: text = ""
-            if text != other:
-                if not recheck or recheck(self, other):
+        if isinstance(other, basestring) or isinstance(other, Number):
+            _value = self._value()
+            if _value != other:
+                if not recheck or recheck(_value, other):
                     return True
             return False
         if self.elem.tag != other.elem.tag or \
            self.elem.attrib != other.elem.attrib or \
-           self.elem.text != other.elem.text or \
+           self._value() != other._value() or \
            len(self) != len(other):
             if not recheck or recheck(self, other):
                 return True
@@ -131,83 +173,51 @@ class XMLStruct(object):
         return False
 
     def as_dict(self, key):
-        if key in self._by_key:
-            return self._by_key[key]
+        if key in self._by_key_:
+            return self._by_key_[key]
         ans = {}
         for e in self:
             if key in e.elem.attrib:
-                ans[e[key]] = e
+                keyval = e[key]
             elif hasattr(e, key):
-                ans[getattr(e, key)] = e
+                keyval = getattr(e, key)
             else:
                 raise KeyError("Attribute or tag '%s' not found in %s"%(key, e))
-        self._by_key[key] = ans
+            skeyval = try_str2int(str(keyval))
+            ans[skeyval] = e
+        self._by_key_[key] = ans
         return ans
 
     def dumps(self, indent=2, level=0):
+        pre = ' ' * indent * level
+        attr = ''.join([' %s="%s"'%(k, v) for k,v in sorted(self.elem.items())])
+        if not self._has_children_:
+            text = str(self)
+            if '\n' in text:
+                # Reformat multi-line text
+                # TODO: can potentially reformat better, remove/add extra space when level changes
+                text = re.sub(r'[ \t]+$', pre, text)
+            return pre + '<%s%s>%s</%s>\n'%(self.tag, attr, text, self.tag)
         if level == 0:
             ans = u'<?xml version="1.0" encoding="UTF-8"?>\n'
         else:
             ans = u''
-        pre = ' ' * indent * level
-        attr = ''.join([' %s="%s"'%(k, v) for k,v in sorted(self.elem.items())])
         ans += pre + '<%s%s>\n'%(self.tag, attr)
         for e in self:
             ans += e.dumps(indent=indent, level=level+1)
         ans += pre + '</%s>\n'%self.tag
         return ans
 
-def is_complex(elem):
-    if elem.keys():
-        # has attributes
-        return True
-    # check if has children
-    it = elem.iter()
-    it.next() # self
-    try:
-        it.next()
-    except StopIteration:
-        return False
-    return True
-
-class xInt(long):
-    def dumps(self, indent=2, level=0):
-        pre = u' ' * indent * level
-        return pre + '<%s>%s</%s>\n'%(self.tag, self, self.tag)
-
-class xStr(unicode):
-    def dumps(self, indent=2, level=0):
-        pre = u' ' * indent * level
-        s, n = re.subn(r'(?m)^', pre, self)
-        if n > 1:
-            return u"%s<%s>\n%s\n%s</%s>\n"%(pre, self.tag, s, pre, self.tag)
-        else:
-            return u"%s<%s>%s</%s>\n"%(pre, self.tag, self, self.tag)
+    def _value(self):
+        return try_str2int(str(self))
 
 def try_str2int(s):
     if not autoint or s is None: return s
     try:
         if s.lower().startswith('0x'):
-            return xInt(s[2:], 16)
+            return int(s[2:], 16)
         else:
-            return xInt(s)
+            return int(s)
     except ValueError:
         pass
     return s
-
-def as_struct(elem):
-    """
-    Returns a simple int / string for simple elements,
-    and XMLStruct() representation for complex ones.
-    Need better name for this method?
-    """
-    if elem is None:
-        return None
-    if is_complex(elem):
-        return XMLStruct(elem)
-    ans = try_str2int(elem.text)
-    if isinstance(ans, basestring) or ans is None:
-        ans = xStr(elem.text if elem.text else "")
-    ans.tag = elem.tag
-    ans.elem = elem
-    return ans
