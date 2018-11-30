@@ -286,6 +286,8 @@ def test_numerics():
     assert c.startswith("cq")
     assert d.endswith("qd")
 
+    assert c.replace('c', 'w') == "wqw"
+
     assert range(a) == range(10)
 
 #def test_create():

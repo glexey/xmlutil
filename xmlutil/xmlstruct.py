@@ -150,6 +150,10 @@ class XMLStruct(object):
         if self.elem.text is None: return False
         return self.elem.text.endswith(s)
 
+    def replace(self, s1, s2):
+        if self.elem.text is None: return None
+        return self.elem.text.replace(s1, s2)
+
     #def append(self, _tag, *args, **kwargs):
     #    # args[0] - element text (optional)
     #    # kwargs - element attributes
