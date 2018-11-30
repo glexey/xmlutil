@@ -138,6 +138,16 @@ class XMLStruct(object):
     def __hex__(self): return hex(self._value())
     def __oct__(self): return oct(self._value())
         
+    def startswith(self, s):
+        if self._has_children_: return False
+        if self.elem.text is None: return False
+        return self.elem.text.startswith(s)
+
+    def endswith(self, s):
+        if self._has_children_: return False
+        if self.elem.text is None: return False
+        return self.elem.text.endswith(s)
+
     #def append(self, _tag, *args, **kwargs):
     #    # args[0] - element text (optional)
     #    # kwargs - element attributes
