@@ -193,6 +193,15 @@ def test_longint():
     xml1 = XMLStruct('<top><child>hello</child><num>0xFFFFFFFF</num></top>')
     assert xml1.num == 0xFFFFFFFF
 
+def test_set_other_member():
+    xml1 = XMLStruct('<top><child><another>hello</another></child></top>')
+    xml1.dataclass = "345"
+    assert xml1.dataclass == "345"
+    xml1.child.dataclass = "123"
+    assert xml1.child.dataclass == "123"
+    xml1.child.another.dataclass = "xxx"
+    assert xml1.child.another.dataclass == "xxx"
+
 #def test_create():
 #    xml = XMLStruct('top', foo="bar")
 #    xml.append('elems', num=5)

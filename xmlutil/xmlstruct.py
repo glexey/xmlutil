@@ -26,12 +26,15 @@ class XMLStruct(object):
         self._by_key = {}
     
     def __getattr__(self, attr):
+        if attr in self.__dict__:
+            return self.__dict__[attr]
         elem = self.elem.find(attr)
         result = as_struct(elem)
         if result is None and attr in ('text', 'tag'):
-            return getattr(self.elem, attr)
-        if get_attr_as_member and attr in self.elem.attrib:
-            return self[attr]
+            result = getattr(self.elem, attr)
+        elif get_attr_as_member and attr in self.elem.attrib:
+            result = self[attr]
+        self.__dict__[attr] = result # must cache, so that user can refer to same object later
         return result
 
     def __setattr__(self, attr, value):
