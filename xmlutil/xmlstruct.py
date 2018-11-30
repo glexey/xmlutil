@@ -151,6 +151,9 @@ class XMLStruct(object):
     #    self.elem.append(e)
 
     def is_different(self, other, recheck=None):
+        if other is None:
+            if not recheck or recheck(self, other):
+                return True
         if isinstance(other, basestring) or isinstance(other, Number):
             _value = self._value()
             if _value != other:

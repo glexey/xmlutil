@@ -181,6 +181,11 @@ def test_equality():
     assert xml5 != xml2 and xml2 != xml5
     assert xml6 != xml2 and xml2 != xml6
 
+    assert not (xml1 == None)
+    assert not (None == xml1)
+    assert xml1 != None
+    assert None != xml1
+
 def test_set_attr():
     xml1 = XMLStruct('<top><child name="child1">hello</child></top>')
     xml2 = XMLStruct('<top><child name="child2">hello</child></top>')
