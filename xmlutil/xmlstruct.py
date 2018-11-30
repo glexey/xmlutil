@@ -138,7 +138,11 @@ class XMLStruct(object):
     def __hex__(self): return hex(self._value())
     def __oct__(self): return oct(self._value())
         
-    def __nonzero__(self): return True
+    def __nonzero__(self):
+        if self._has_children_:
+            return True
+        else:
+            return bool(self._value())
 
     def __hash__(self):
         if self._has_children_:

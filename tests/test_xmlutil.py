@@ -231,10 +231,13 @@ def test_same_obj():
     assert id(bb[0]) == id(top.a.a1)
 
 def test_numerics():
-    top = XMLStruct('<top><a>10</a><b>5</b><c>cqc</c><d>dqd</d></top>')
+    top = XMLStruct('<top><a>10</a><b>5</b><c>0</c></top>')
     a = top.a
     b = top.b
+
     assert a
+    assert not top.c
+    
     assert a > b
     assert a >= b
     assert b < a
@@ -277,8 +280,17 @@ def test_numerics():
     assert oct(a) == '012'
     assert hex(a) == '0xa'
 
+    assert range(a) == range(10)
+
+def test_str_ops():
+    top = XMLStruct('<top><c>cqc</c><d>dqd</d><e></e></top>')
+
     c = top.c
     d = top.d
+
+    assert c
+    assert not top.e
+    
     assert c + d == "cqcdqd"
     assert c + "aaa" == "cqcaaa"
     assert "aaa" + c == "aaacqc"
@@ -288,7 +300,8 @@ def test_numerics():
 
     assert c.replace('c', 'w') == "wqw"
 
-    assert range(a) == range(10)
+    assert "qd" in d
+
 
 def test_hash():
     top = XMLStruct('<top><child>hello</child></top>')
