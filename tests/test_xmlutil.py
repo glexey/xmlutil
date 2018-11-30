@@ -290,6 +290,11 @@ def test_numerics():
 
     assert range(a) == range(10)
 
+def test_hash():
+    top = XMLStruct('<top><child>hello</child></top>')
+    a = {top.child: 123}
+    assert a['hello'] == 123
+
 #def test_create():
 #    xml = XMLStruct('top', foo="bar")
 #    xml.append('elems', num=5)
