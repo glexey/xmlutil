@@ -226,7 +226,7 @@ def test_same_obj():
     assert id(bb[0]) == id(top.a.a1)
 
 def test_numerics():
-    top = XMLStruct('<top><a>10</a><b>5</b></top>')
+    top = XMLStruct('<top><a>10</a><b>5</b><c>ccc</c><d>ddd</d></top>')
     a = top.a
     b = top.b
     assert a > b
@@ -270,6 +270,12 @@ def test_numerics():
     assert long(a) == 10
     assert oct(a) == '012'
     assert hex(a) == '0xa'
+
+    c = top.c
+    d = top.d
+    assert c + d == "cccddd"
+    assert c + "aaa" == "cccaaa"
+    assert "aaa" + c == "aaaccc"
 
 #def test_create():
 #    xml = XMLStruct('top', foo="bar")

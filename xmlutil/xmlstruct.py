@@ -109,8 +109,8 @@ class XMLStruct(object):
         return diff
 
     def __cmp__(self, other): return -other.__cmp__(self._value())
-    def __add__(self, other): return other.__radd__(self._value())
-    def __radd__(self, other): return other.__add__(self._value())
+    def __add__(self, other): return self._value() + other
+    def __radd__(self, other): return other + self._value()
     def __sub__(self, other): return other.__rsub__(self._value())
     def __rsub__(self, other): return other.__sub__(self._value())
     def __mul__(self, other): return other.__rmul__(self._value())
