@@ -234,6 +234,7 @@ def test_numerics():
     top = XMLStruct('<top><a>10</a><b>5</b><c>cqc</c><d>dqd</d></top>')
     a = top.a
     b = top.b
+    assert a
     assert a > b
     assert a >= b
     assert b < a
@@ -284,6 +285,8 @@ def test_numerics():
 
     assert c.startswith("cq")
     assert d.endswith("qd")
+
+    assert range(a) == range(10)
 
 #def test_create():
 #    xml = XMLStruct('top', foo="bar")
