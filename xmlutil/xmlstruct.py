@@ -85,8 +85,11 @@ class XMLStruct(object):
             return len(str(self))
 
     def __repr__(self):
-        s_attr = ''.join(", %s='%s'"%(k, v) for k,v in self.elem.items())
-        return "XMLStruct('%s'%s)"%(self.elem.tag, s_attr)
+        if self._has_children_:
+            s_attr = ''.join(", %s='%s'"%(k, v) for k,v in self.elem.items())
+            return "XMLStruct('%s'%s)"%(self.elem.tag, s_attr)
+        else:
+            return repr(self._value())
 
     def __str__(self):
         if self._has_children_:

@@ -25,6 +25,7 @@ def test_str():
     assert str(top) == repr(top)
     assert str(top) == "XMLStruct('top')"
     assert str(top.child) == "hello"
+    assert repr(top.child) == repr("hello")
 
 def test_text():
     top = XMLStruct(xml1)
@@ -34,6 +35,7 @@ def test_attr_as_int():
     top = XMLStruct(xml1)
     assert top.child["id"] == 0xe2
     assert top.child.id == 0xe2
+    assert repr(top.child.id) == repr(0xe2)
 
 xml1e = '<top><num></num><child name="child1"></child></top>'
 
@@ -113,6 +115,7 @@ def test_autoint():
     f = top.messages.message.field
     assert f.start == 0
     assert f.size == 8
+    assert repr(f.size) == repr(8)
     msg2 = top.messages("message", name="msg2")
     # try sorting by start bit
     s = [f.description for f in sorted(msg2, key=lambda f: f.start)]
