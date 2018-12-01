@@ -181,6 +181,22 @@ class XMLStruct(object):
         if self.elem.text is None: return None
         return self.elem.text.lower()
 
+    def rstrip(self, *args):
+        if self.elem.text is None: return None
+        return self.elem.text.rstrip(*args)
+
+    def lstrip(self, *args):
+        if self.elem.text is None: return None
+        return self.elem.text.lstrip(*args)
+
+    def strip(self, *args):
+        if self.elem.text is None: return None
+        return self.elem.text.strip(*args)
+
+    def split(self, *args):
+        if self.elem.text is None: return None
+        return self.elem.text.split(*args)
+
     #def append(self, _tag, *args, **kwargs):
     #    # args[0] - element text (optional)
     #    # kwargs - element attributes

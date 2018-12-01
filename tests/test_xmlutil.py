@@ -283,7 +283,7 @@ def test_numerics():
     assert range(a) == range(10)
 
 def test_str_ops():
-    top = XMLStruct('<top><c>cqc</c><d>dqd</d><e></e></top>')
+    top = XMLStruct('<top><c>cqc</c><d>dqd</d><e></e><f>   a s d   </f></top>')
 
     c = top.c
     d = top.d
@@ -308,6 +308,16 @@ def test_str_ops():
 
     assert d.upper() == "DQD"
     assert d.lower() == "dqd"
+
+    f = top.f
+    assert f.rstrip() == "   a s d"
+    assert d.rstrip("d") == "dq"
+    assert f.lstrip() == "a s d   "
+    assert d.lstrip("d") == "qd"
+    assert f.strip() == "a s d"
+    assert d.strip("d") == "q"
+    assert f.split() == ["a", "s", "d"]
+    assert f.split(" ") == ['', '', '', 'a', 's', 'd', '', '', '']
 
 def test_hash():
     top = XMLStruct('<top><child>hello</child></top>')
