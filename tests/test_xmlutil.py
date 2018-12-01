@@ -306,6 +306,9 @@ def test_str_ops():
 
     assert len(d) == 3
 
+    assert d.upper() == "DQD"
+    assert d.lower() == "dqd"
+
 def test_hash():
     top = XMLStruct('<top><child>hello</child></top>')
     a = {top.child: 123}

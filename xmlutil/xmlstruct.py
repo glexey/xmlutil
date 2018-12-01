@@ -173,6 +173,14 @@ class XMLStruct(object):
         if self.elem.text is None: return None
         return self.elem.text.replace(s1, s2)
 
+    def upper(self):
+        if self.elem.text is None: return None
+        return self.elem.text.upper()
+
+    def lower(self):
+        if self.elem.text is None: return None
+        return self.elem.text.lower()
+
     #def append(self, _tag, *args, **kwargs):
     #    # args[0] - element text (optional)
     #    # kwargs - element attributes
