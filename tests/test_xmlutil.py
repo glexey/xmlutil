@@ -276,6 +276,7 @@ def test_numerics():
     assert a << b == 320
     assert a << 1 == 20
     assert 1 << a == 1024
+    assert ~a == -11
 
     assert a.__float__() / 3 == 10. / 3
 

@@ -257,5 +257,6 @@ for func in [
     '__oct__',
     '__neg__',
     '__abs__',
+    '__invert__',
     ]:
     setattr(XMLStruct, func, get_func(func))
