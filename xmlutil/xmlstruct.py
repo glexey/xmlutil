@@ -45,6 +45,9 @@ class XMLStruct(object):
             result = self[attr]
         else:
             result = None
+        if result is None and not self._has_children_:
+            # for simple values, try treating attr as a value function
+            result = getattr(self._value(), attr, None)
         return result
 
     def __setattr__(self, attr, value):
@@ -132,15 +135,7 @@ class XMLStruct(object):
     def __rrshift__(self, other): return other.__rshift__(self._value())
     def __pow__(self, other): return other.__rpow__(self._value())
     def __rpow__(self, other): return other.__pow__(self._value())
-    def __abs__(self): return abs(self._value())
-    def __neg__(self): return -(self._value())
 
-    def __float__(self): return float(self._value())
-    def __int__(self): return int(self._value())
-    def __long__(self): return long(self._value())
-    def __hex__(self): return hex(self._value())
-    def __oct__(self): return oct(self._value())
-        
     def __nonzero__(self):
         if self._has_children_:
             return True
@@ -158,44 +153,6 @@ class XMLStruct(object):
             return value in self.elem # bogus
         else:
             return value in self._value()
-
-    def startswith(self, s):
-        if self._has_children_: return False
-        if self.elem.text is None: return False
-        return self.elem.text.startswith(s)
-
-    def endswith(self, s):
-        if self._has_children_: return False
-        if self.elem.text is None: return False
-        return self.elem.text.endswith(s)
-
-    def replace(self, s1, s2):
-        if self.elem.text is None: return None
-        return self.elem.text.replace(s1, s2)
-
-    def upper(self):
-        if self.elem.text is None: return None
-        return self.elem.text.upper()
-
-    def lower(self):
-        if self.elem.text is None: return None
-        return self.elem.text.lower()
-
-    def rstrip(self, *args):
-        if self.elem.text is None: return None
-        return self.elem.text.rstrip(*args)
-
-    def lstrip(self, *args):
-        if self.elem.text is None: return None
-        return self.elem.text.lstrip(*args)
-
-    def strip(self, *args):
-        if self.elem.text is None: return None
-        return self.elem.text.strip(*args)
-
-    def split(self, *args):
-        if self.elem.text is None: return None
-        return self.elem.text.split(*args)
 
     #def append(self, _tag, *args, **kwargs):
     #    # args[0] - element text (optional)
@@ -283,3 +240,19 @@ def try_str2int(s):
     except ValueError:
         pass
     return s
+
+def get_func(func):
+    def foo(obj, *args): # FIXME: why doesn't it work for multi-arg?
+        return getattr(obj._value(), func)(*args)
+    return foo
+
+for func in [
+    '__float__',
+    '__int__',
+    '__long__',
+    '__hex__',
+    '__oct__',
+    '__neg__',
+    '__abs__',
+    ]:
+    setattr(XMLStruct, func, get_func(func))

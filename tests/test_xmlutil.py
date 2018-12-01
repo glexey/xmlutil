@@ -274,6 +274,8 @@ def test_numerics():
     assert a << 1 == 20
     assert 1 << a == 1024
 
+    assert a.__float__() / 3 == 10. / 3
+
     assert float(a) / 3 == 10. / 3
     assert int(a) == 10
     assert long(a) == 10
@@ -281,6 +283,8 @@ def test_numerics():
     assert hex(a) == '0xa'
 
     assert range(a) == range(10)
+
+    assert a.bit_length() == 4
 
 def test_str_ops():
     top = XMLStruct('<top><c>cqc</c><d>dqd</d><e></e><f>   a s d   </f></top>')
