@@ -102,12 +102,18 @@ class XMLStruct(object):
     def __call__(self, match, **kwargs):
         """
         Find first element by tag name or path, filtering by given attributes
+        If there is no matching element, return None
         """
+        try:
+            return self.iterfind(match, **kwargs).next()
+        except StopIteration:
+            return None
+
+    def iterfind(self, match, **kwargs):
         for e in self.elem.iterfind(match):
             mismatch = any([e.get(k) != v for k, v in kwargs.iteritems()])
             if not mismatch:
-                return self._elem2struct(e)
-        return None
+                yield self._elem2struct(e)
 
     def __eq__(self, other):
         diff = self.is_different(other)

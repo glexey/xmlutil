@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 _mydir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(_mydir + '/..')
@@ -326,6 +327,23 @@ def test_str_ops():
     assert d.strip("d") == "q"
     assert f.split() == ["a", "s", "d"]
     assert f.split(" ") == ['', '', '', 'a', 's', 'd', '', '', '']
+
+def test_buffer_interface():
+    """
+    Buffer interface doesn't work, as it can only be implemented in C
+    So we have to convert element to `str` to be able to re.sub() on it,
+    or do file.write() on it
+    """
+    top = XMLStruct('<top><child>hello</child></top>')
+    a = re.sub('l', 'x', str(top.child))
+    assert a == 'hexxo'
+
+def test_iterfind():
+    top = XMLStruct('<top><num>10</num><s>hello</s><num>20</num><s>world</s></top>')
+    nums = list(top.iterfind('num'))
+    assert nums == [10, 20]
+    ss = list(top.iterfind('s'))
+    assert ss == ['hello', 'world']
 
 def test_hash():
     top = XMLStruct('<top><child>hello</child></top>')
