@@ -4,6 +4,8 @@ import sys
 _mydir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(_mydir + '/..')
 
+from builtins import int as long
+
 from xmlutil import XMLStruct
 
 xml1 = '<top><child name="child1" id="0xe2">hello</child></top>'
@@ -255,11 +257,11 @@ def test_numerics():
     assert a * b == 50
     assert a * 3 == 30
     assert 3 * a == 30
-    assert a / b == 2
-    assert a / 4 == 2,    a / 4
-    assert 4 / a == 0,    4 / a
-    assert a / 4. == 2.5, a / 4.
-    assert 4. / a == 0.4, 4. / a
+    assert a / b == 10 / 5, 10 / 5
+    assert a / 4 == 10 / 4, 10 / 4
+    assert 4 / a == 4 / 10, 4 / 10
+    assert a / 4. == 2.5, 10 / 4.
+    assert 4. / a == 0.4, 4. / 10
     assert a // b == 2
     assert a // 3 == 3
     assert 23 // a == 2
@@ -281,11 +283,11 @@ def test_numerics():
 
     assert a.__float__() / 3 == 10. / 3
 
-    assert float(a) / 3 == 10. / 3
-    assert int(a) == 10
-    assert long(a) == 10
-    assert oct(a) == '012'
-    assert hex(a) == '0xa'
+    assert float(a) / 3 == float(10) / 3
+    assert int(a) == int(10)
+    assert long(a) == long(10)
+    assert oct(a) == oct(10)
+    assert hex(a) == hex(10)
 
     assert range(a) == range(10)
 
@@ -357,6 +359,5 @@ def test_hash():
 #    xml.elems.append("elem", "Element 1", name="elem1")
 #    xml.elems.append("elem", "Element 2", name="elem2")
 #    xml.elems.append("elem", "Element 3", name="elem3")
-#    print xml.dumps()
 #    assert 0
 #

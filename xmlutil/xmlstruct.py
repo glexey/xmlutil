@@ -2,6 +2,11 @@ import re
 from numbers import Number
 import xml.etree.cElementTree as ET
 
+# Python 2 and 3 compatibility
+from past.builtins import basestring
+from future.utils import iteritems
+from builtins import str as utext
+
 # Automatically convert string to integers, when possible
 autoint = True
 
@@ -20,7 +25,7 @@ class XMLStruct(object):
                 self.elem = ET.parse(arg).getroot()
             else:
                 # Top element
-                attr = ''.join([' %s="%s"'%(k, v) for k,v in sorted(kwargs.iteritems())])
+                attr = ''.join([' %s="%s"'%(k, v) for k,v in sorted(iteritems(kwargs))])
                 self.elem = ET.fromstring("<%s%s></%s>"%(arg, attr, arg))
         else:
             self.elem = arg
@@ -57,7 +62,7 @@ class XMLStruct(object):
                 # If there exists child element with a name of a given attribute,
                 # set it to a given value
                 child = self._elem2struct(elem)
-                child.elem.text = unicode(value)
+                child.elem.text = utext(value)
                 return
         self.__dict__[attr] = value
 
@@ -105,13 +110,13 @@ class XMLStruct(object):
         If there is no matching element, return None
         """
         try:
-            return self.iterfind(match, **kwargs).next()
+            return next(self.iterfind(match, **kwargs))
         except StopIteration:
             return None
 
     def iterfind(self, match, **kwargs):
         for e in self.elem.iterfind(match):
-            mismatch = any([e.get(k) != v for k, v in kwargs.iteritems()])
+            mismatch = any([e.get(k) != v for k, v in iteritems(kwargs)])
             if not mismatch:
                 yield self._elem2struct(e)
 
@@ -123,7 +128,11 @@ class XMLStruct(object):
         diff = self.is_different(other)
         return diff
 
-    def __cmp__(self, other): return -other.__cmp__(self._value())
+    if hasattr(0, '__cmp__'): # python 2
+        def __cmp__(self, other): return -other.__cmp__(self._value())
+    else: # python 3
+        def __gt__(self, other): return -other.__gt__(self._value())
+        def __ge__(self, other): return -other.__ge__(self._value())
     def __add__(self, other): return self._value() + other
     def __radd__(self, other): return other + self._value()
     def __sub__(self, other): return other.__rsub__(self._value())
@@ -131,7 +140,9 @@ class XMLStruct(object):
     def __mul__(self, other): return other.__rmul__(self._value())
     def __rmul__(self, other): return other.__mul__(self._value())
     def __div__(self, other): return other.__rdiv__(self._value())
+    def __truediv__(self, other): return other.__rtruediv__(self._value())
     def __rdiv__(self, other): return other.__div__(self._value())
+    def __rtruediv__(self, other): return other.__truediv__(self._value())
     def __floordiv__(self, other): return other.__rfloordiv__(self._value())
     def __rfloordiv__(self, other): return other.__floordiv__(self._value())
     def __mod__(self, other): return other.__rmod__(self._value())
@@ -145,11 +156,14 @@ class XMLStruct(object):
     def __pow__(self, other): return other.__rpow__(self._value())
     def __rpow__(self, other): return other.__pow__(self._value())
 
-    def __nonzero__(self):
+    def __nonzero__(self): # python 2
         if self._has_children_:
             return True
         else:
             return bool(self._value())
+
+    def __bool__(self): # python 3
+        return self.__nonzero__()
 
     def __hash__(self):
         if self._has_children_:
@@ -166,7 +180,7 @@ class XMLStruct(object):
     #def append(self, _tag, *args, **kwargs):
     #    # args[0] - element text (optional)
     #    # kwargs - element attributes
-    #    attr = ''.join([' %s="%s"'%(k, v) for k,v in sorted(kwargs.iteritems())])
+    #    attr = ''.join([' %s="%s"'%(k, v) for k,v in sorted(iteritems(kwargs))])
     #    if len(args) > 0:
     #        text = args[0]
     #    else:
@@ -259,6 +273,7 @@ for func in [
     '__float__',
     '__int__',
     '__long__',
+    '__index__',
     '__hex__',
     '__oct__',
     '__neg__',
