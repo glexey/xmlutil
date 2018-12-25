@@ -4,6 +4,9 @@
 
 Convenience wrapper around python's `cElementtree` for working with XML data.
 
+Goal: simplicity of working with XML that represent data structures. Non-goals: speed, supporting
+all XML quirks.
+
 ## Install
 
     pip install xmlutil
