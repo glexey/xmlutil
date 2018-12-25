@@ -14,10 +14,13 @@ install:
 script: 
     py.test
 
-deploy:
-  provider: pypi
-  user: glexey
-  password:
-      secure: EZ4scmbnUddjbIHw02udUHZrI4GSwgtbGN85lbOGtX+cDu7wAxBqcIRojfJfN8/xG9rs5mB5TbMIZlg86d12g+bKY37HDl7yqTouMpZiFJm1QjxVqTk+zsaHVPZsYx1SihzC87xXhwMmeUEGLRKd+Mz9DbdCNJs5jYu3nAF0ttXI9imyr5U1VlyBCdos1AwaBejMvIHWnBr6E6a8Mf6dIKfCptluC+lcNg6+QjNbaOErovGlcRMJwRo4PZZJ0GN7+kle0XsXqYVd1vSdJsnYpvpJHXm66+8Utj5jXRzWm0AjagQn6lvXoA0/+UfiRZPoNHCV4Pph3YhDe37eZPJrszL5ANl28muINRfbcodxaxaPDpucLn9fAQtSfMAkqUooopYp6/2XWD+xvSoDu4MCvSnH6a2o62L9BIVbsGyg0ITcIHHaYdzarIck6HmvfGhfk6kQvMDMYgaI8Mi7rUY5nGfg2YLXvacGlDzbvUMhuD5P/xDeQfhJzBgHXk48afIvudAjP2HuXbtAI+Q4ZGy1dlPt4aJvqaivGs581jV/iR5mMC9kuGIey96+xr42jx5V5PUiZqHRX+6FKuF2Y2NWCKO3MJeBKkTJmw4O3z2K2BFYNn2ZfKcoGm02Om4RFfETJUXRycuqTk/F0Jz6w/LJyPE4kH9ogkauxv+RKEv/HO0=
-  on:
-    tags: true
+jobs:
+    include:
+        - stage: deploy
+          provider: pypi
+          python: 3.6
+          user: glexey
+          password:
+              secure: EZ4scmbnUddjbIHw02udUHZrI4GSwgtbGN85lbOGtX+cDu7wAxBqcIRojfJfN8/xG9rs5mB5TbMIZlg86d12g+bKY37HDl7yqTouMpZiFJm1QjxVqTk+zsaHVPZsYx1SihzC87xXhwMmeUEGLRKd+Mz9DbdCNJs5jYu3nAF0ttXI9imyr5U1VlyBCdos1AwaBejMvIHWnBr6E6a8Mf6dIKfCptluC+lcNg6+QjNbaOErovGlcRMJwRo4PZZJ0GN7+kle0XsXqYVd1vSdJsnYpvpJHXm66+8Utj5jXRzWm0AjagQn6lvXoA0/+UfiRZPoNHCV4Pph3YhDe37eZPJrszL5ANl28muINRfbcodxaxaPDpucLn9fAQtSfMAkqUooopYp6/2XWD+xvSoDu4MCvSnH6a2o62L9BIVbsGyg0ITcIHHaYdzarIck6HmvfGhfk6kQvMDMYgaI8Mi7rUY5nGfg2YLXvacGlDzbvUMhuD5P/xDeQfhJzBgHXk48afIvudAjP2HuXbtAI+Q4ZGy1dlPt4aJvqaivGs581jV/iR5mMC9kuGIey96+xr42jx5V5PUiZqHRX+6FKuF2Y2NWCKO3MJeBKkTJmw4O3z2K2BFYNn2ZfKcoGm02Om4RFfETJUXRycuqTk/F0Jz6w/LJyPE4kH9ogkauxv+RKEv/HO0=
+          on:
+            tags: true
