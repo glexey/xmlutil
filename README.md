@@ -2,7 +2,7 @@
 
 # xmlutil::XMLStruct
 
-Convenience wrapper around python's `cElementtree for` working with XML data.
+Convenience wrapper around python's `cElementtree` for working with XML data.
 
 ## Install
 
@@ -83,44 +83,44 @@ We'll use the following XML for the examples below:
      </top>
     '''
 
-After reading the data, XMLStruct points to the topmost element ("top" in this case"):
+After reading the data, XMLStruct points to the topmost element ("top" in this case):
 
     >>> top = XMLStruct(msgs_xml)
     >>> top
-    top = XMLStruct(msgs_xml)
+    XMLStruct('top')
 
-First child element with a given tag be accessed by XML tag name using `.`:
+First child element with a given tag name be accessed by XML tag name using `.` notation:
 
     >>> top.messages
     XMLStruct('messages')
     >>> top.messages.message
     XMLStruct('message', name='DEBUG_BREAKPOINT')
 
-XML attributes can be accessed using a `.` notation, and in case of ambiguity, through a dict-like
-access:
+XML *attributes* can also be accessed using a `.` notation, and in case of ambiguity, through a
+dict-like access:
 
     >>> top.messages.message.name
     'DEBUG_BREAKPOINT'
     >>> top.messages.message['name']
     'DEBUG_BREAKPOINT'
 
-Children can be also accessed as a list:
+Children be accessed as a list:
 
+    >>> list(top.messages)
+    [XMLStruct('message', name='DEBUG_BREAKPOINT'),
+     XMLStruct('message', name='MEMORY_ALLOC')]
     >>> top[0] == top.messages
     True
     >>> top.messages[1].name
     'MEMORY_ALLOC'
-    >>> list(top.messages)
-    [XMLStruct('message', name='DEBUG_BREAKPOINT'),
-     XMLStruct('message', name='MEMORY_ALLOC')]
     >>> len(top.messages.message)
     3
 
-Here's how we can print all message fields:
+Here's how we can print all message fields in this example:
 
     >>> for msg in top.messages:
-      >     for field in msg:
-      >         print "%s.%s"%(msg.name, field.name)
+            for field in msg:
+                print "%s.%s"%(msg.name, field.name)
     DEBUG_BREAKPOINT.descriptor
     DEBUG_BREAKPOINT.lineno
     DEBUG_BREAKPOINT.reason
@@ -138,7 +138,7 @@ When attempting to access a non-existing element, `None` is returned w/o throwin
 Elements that have no children are *simple*.
 
 Simple elements that contain text that looks like a numeric value, for most intents and purposes
-behave as numbers:
+behave like numbers:
 
     >>> field1 = top.messages.message.field
     >>> field1.start
@@ -156,7 +156,7 @@ However, they are still XMLStruct():
 TODO: describe supported number formats, and turning off auto-number conversion behavior.
 
 Simple elements that contain text that does not look like a number, for most intents and purposes
-behave as strings containing the element's text:
+behave like strings containing the element's text:
 
     >>> desc1 = top.messages.message.field.description
     >>> desc1
@@ -173,4 +173,24 @@ file.write(). For such operations, explicitly convert the XMLStruct to `str`:
     TypeError: expected string or buffer
     >>> re.sub('descri', 'velocira', str(desc1))
     'File velociraptor'
+
+### Using XPath notation
+
+Elements can be selected (iterated over) using XPath expressions [subset supported by
+Elementtree](https://docs.python.org/2/library/xml.etree.elementtree.html#xpath-support):
+
+    >>> list(top.iterfind('.//field'))
+    [XMLStruct('field', name='descriptor'),
+     XMLStruct('field', name='lineno'),
+     XMLStruct('field', name='reason'),
+     XMLStruct('field', name='base_address'),
+     XMLStruct('field', name='length'),
+     XMLStruct('field', name='mode')]
+
+When there's just first element that needs to be located `()` notation can be used:
+
+    >>> top('.//field')
+    XMLStruct('field', name='descriptor')
+    >>> top('.//field[@name="base_address"]')
+    XMLStruct('field', name='base_address')
 
