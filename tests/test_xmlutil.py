@@ -352,6 +352,11 @@ def test_hash():
     a = {top.child: 123}
     assert a['hello'] == 123
 
+def test_is_int():
+    top = XMLStruct('<top><num>10</num><s>hello</s><num>20</num><s>world</s></top>')
+    assert top.num._is_int()
+    assert not top.s._is_int()
+
 #def test_create():
 #    xml = XMLStruct('top', foo="bar")
 #    xml.append('elems', num=5)

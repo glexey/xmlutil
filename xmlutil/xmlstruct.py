@@ -253,13 +253,17 @@ class XMLStruct(object):
     def _value(self):
         return try_str2int(str(self))
 
+    def _is_int(self):
+        return isinstance(self._value(), Number)
+
 def try_str2int(s):
     if not autoint or s is None: return s
     try:
         if s.lower().startswith('0x'):
-            return int(s[2:], 16)
+            num = int(s[2:], 16)
         else:
-            return int(s)
+            num = int(s)
+        return num
     except ValueError:
         pass
     return s
