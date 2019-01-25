@@ -1,11 +1,20 @@
 import re
+import sys
 from numbers import Number
 import xml.etree.cElementTree as ET
 
-# Python 2 and 3 compatibility
-from past.builtins import basestring
-from future.utils import iteritems
-from builtins import str as utext
+# Python 2 & 3 compatibility
+if sys.version_info[0] < 3:
+    utext = unicode
+else:
+    basestring = (bytes, str)
+    utext = str
+def iteritems(obj, **kwargs):
+    func = getattr(obj, "iteritems", None)
+    if not func:
+        func = obj.items
+    return func(**kwargs)
+
 
 # Automatically convert string to integers, when possible
 autoint = True

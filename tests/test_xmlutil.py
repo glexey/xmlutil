@@ -4,8 +4,6 @@ import sys
 _mydir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(_mydir + '/..')
 
-from builtins import int as long
-
 from xmlutil import XMLStruct
 
 xml1 = '<top><child name="child1" id="0xe2">hello</child></top>'
@@ -285,7 +283,6 @@ def test_numerics():
 
     assert float(a) / 3 == float(10) / 3
     assert int(a) == int(10)
-    assert long(a) == long(10)
     assert oct(a) == oct(10)
     assert hex(a) == hex(10)
 
